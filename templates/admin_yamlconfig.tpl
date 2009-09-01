@@ -8,6 +8,10 @@
 			{formhelp note="Select a package to get its configuration data or select all to get all kernel configuration information."}
 			{html_options options=$activePackages name=kernel_config_pkg selected=$smarty.request.kernel_config_pkg}
 		</div>
+		<div class="row">
+			{formhelp note="Select a layout to get its configuration data or select all to get all layout information."}
+			{html_options options=$layouts name=themes_layouts selected=$smarty.request.themes_layouts}
+		</div>
 		<div class="row submit">
 			<input type="submit" name="dump" value="{tr}Dump Settings to YAML{/tr}" />
 		</div>

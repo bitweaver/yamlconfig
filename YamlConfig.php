@@ -103,9 +103,34 @@ class YamlConfig {
 	}
 
 	// data from themes layouts
-	public static function getLayouts( $pPackage ){
+	public static function getLayout( $pPackage ){
+		global $gBitThemes;
 		$layouts = $gBitThemes->getAllLayouts();
-		$ret = $layouts;
+
+		$data = array( 'themes_layouts'=>array() );
+
+		if( !empty( $pPackage ) && strtoupper( $pPackage ) != 'ALL' ){
+			if( in_array( $pPackage, array_keys($layouts) ) ){
+				$hash = array( $pPackage => $layouts[ $pPackage ] );
+			}
+			else{
+				$pParamHash['errors']['package'] = tra( 'No layout for this package exists.' );
+			}
+		}else{
+			$hash = $layouts;
+		}
+
+		foreach( $hash as $pkg=>$area ){
+			// layout modules are needlessly nested in areas - remove them
+			foreach( $area as $modules ){
+				foreach( $modules as $module ){
+					$data['themes_layouts'][$pkg][] = $module;;
+				}
+			}
+		}
+
+		$ret = Horde_Yaml::dump( $data );
+
 		return $ret;
 	}
 

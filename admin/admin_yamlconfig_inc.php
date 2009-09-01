@@ -3,8 +3,15 @@
 include_once( YAMLCONFIG_PKG_PATH.'YamlConfig.php' );
 
 if( !empty( $_REQUEST["dump"] )) {
-	$pkg = !empty( $_REQUEST['kernel_config_pkg'] )?$_REQUEST['kernel_config_pkg']:NULL;
-	$yaml = YamlConfig::getKernelConfig( $pkg ); 
+	$yaml = "";
+	if( !empty( $_REQUEST['kernel_config_pkg'] ) ){ 
+		$pkg = $_REQUEST['kernel_config_pkg'];
+		$yaml .= YamlConfig::getKernelConfig( $pkg ); 
+	}
+	if( !empty( $_REQUEST['themes_layouts'] ) ){ 
+		$pkg = $_REQUEST['themes_layouts'];
+		$yaml .= YamlConfig::getLayout( $pkg ); 
+	}
 	$gBitSmarty->assign( 'yaml', $yaml );
 }
 
@@ -15,7 +22,7 @@ if( !empty( $_REQUEST['submit_upload'] ) ){
 	}
 }
 
-// stuff for out forms
+// stuff for forms
 $activePackages = array( 'all' => 'ALL' );
 foreach( $gBitSystem->mPackages as $pkgname=>$data ){
 	if( $data['active_switch'] ){
@@ -23,5 +30,14 @@ foreach( $gBitSystem->mPackages as $pkgname=>$data ){
 	}
 }
 ksort( $activePackages );
+array_unshift( $activePackages, 'None' ); // requests NULL
 $gBitSmarty->assign_by_ref( 'activePackages', $activePackages );
 
+
+$layouts = array( 'all' => 'ALL' );
+foreach( $gBitThemes->getAllLayouts() as $package=>$modules ){
+	$layouts[$package] = $package;
+}
+ksort( $layouts );
+array_unshift( $layouts, 'None' ); // requests NULL
+$gBitSmarty->assign_by_ref( 'layouts', $layouts );

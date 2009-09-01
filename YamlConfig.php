@@ -24,19 +24,33 @@ class YamlConfig {
 		if( YamlConfig::verifyUpload( $pParamHash ) ){
 			foreach( $pParamHash['upload_process'] as $file ){
 				if( $hash = Horde_Yaml::loadFile( $file['tmp_name'] ) ){
-					// parser is a little annoying when it comes to n and y - it reinterprets them as FALSE and TRUE
-					// we're lazy and dont want to regex the dump so lets try just flipping them back
-					foreach( $hash['kernel_config'] as $pkg=>$data ){
-						foreach( $hash['kernel_config'][$pkg] as $config=>$value ){
-							if( $value === TRUE || $value === FALSE ){
-								$hash['kernel_config'][$pkg][$config] = $value?'y':'n';	
+					// deal with anything that might be in this hash
+					// @Todo probably want to move this out of here eventually
+
+					// kernel_config settings
+					if( !empty( $hash['kernel_config'] ) ){
+						// parser is a little annoying when it comes to n and y - it reinterprets them as FALSE and TRUE
+						// we're lazy and dont want to regex the dump so lets try just flipping them back
+						foreach( $hash['kernel_config'] as $pkg=>$data ){
+							foreach( $hash['kernel_config'][$pkg] as $config=>$value ){
+								if( $value === TRUE || $value === FALSE ){
+									$hash['kernel_config'][$pkg][$config] = $value?'y':'n';	
+								}
 							}
 						}
-					}
-					$pParamHash['config_data'] = $hash;
+						$pParamHash['config_data']['kernel_config'] = $hash['kernel_config'];
 
-					// store the configurations
-					YamlConfig::setKernelConfig( $pParamHash ); 
+						// store the configurations
+						YamlConfig::setKernelConfig( $pParamHash ); 
+					}
+
+					// themes_layouts settings
+					if( !empty( $hash['themes_layouts'] ) ){
+						$pParamHash['config_data']['themes_layouts'] = $hash['themes_layouts'];
+
+						// store the configurations
+						YamlConfig::setThemesLayouts( $pParamHash ); 
+					}
 				}
 			}
 		}
@@ -143,6 +157,22 @@ class YamlConfig {
 				foreach( $hash['kernel_config'][$pkg] as $config=>$value ){
 					$gBitSystem->storeConfig( $config, $value, $pkg );
 					$pParamHash['config_log']['KERNEL::storeConfig'][$pkg][$config] = $value;
+				}
+			}
+		}
+	}
+
+	public static function setThemesLayouts( &$pParamHash ){
+		global $gBitThemes;
+
+		if( !empty( $pParamHash['config_data'] ) && !empty( $pParamHash['config_data']['themes_layouts'] ) ){
+			$hash = $pParamHash['config_data'];
+
+			foreach( $hash['themes_layouts'] as $pkg=>$modules ){
+				foreach( $modules as $module ){
+					$gBitThemes->storeModule( $module );
+					//storeModule modifies the module hash, so pick up the results from 'store' param
+					$pParamHash['config_log']['THEMES::storeModule'][$pkg][] = $module['store']; 
 				}
 			}
 		}

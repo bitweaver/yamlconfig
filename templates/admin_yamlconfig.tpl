@@ -12,6 +12,10 @@
 			{formhelp note="Select a layout to get its configuration data or select all to get all layout information."}
 			{html_options options=$layouts name=themes_layouts selected=$smarty.request.themes_layouts}
 		</div>
+		<div class="row">
+			{formhelp note="Select a groupt to get its permissions data or select all to get all permission information (Custom content permissions not included)."}
+			{html_options options=$activePackages name=users_permissions selected=$smarty.request.users_permissions}
+		</div>
 		<div class="row submit">
 			<input type="submit" name="dump" value="{tr}Dump Settings to YAML{/tr}" />
 		</div>

@@ -10,19 +10,25 @@ if( !empty( $_REQUEST["dump"] )) {
 	}
 	if( !empty( $_REQUEST['themes_layouts'] ) ){ 
 		$pkg = $_REQUEST['themes_layouts'];
-		$yaml .= YamlConfig::getLayout( $pkg ); 
+		$yaml .= YamlConfig::getThemesLayout( $pkg ); 
+	}
+	if( !empty( $_REQUEST['users_permissions'] ) ){ 
+		$pkg = $_REQUEST['users_permissions'];
+		$yaml .= YamlConfig::getUsersPermissions( $pkg ); 
 	}
 	$gBitSmarty->assign( 'yaml', $yaml );
 }
 
 if( !empty( $_REQUEST['submit_upload'] ) ){
+	$gBitUser->verifyTicket();
+
 	if( YamlConfig::processUploadFile( $_REQUEST ) ){
 		// display log as valid yaml too - how sweet is that?
 		$gBitSmarty->assign( "config_log", Horde_Yaml::dump( $_REQUEST['config_log'] ) );
 	}
 }
 
-// stuff for forms
+// get data for forms
 $activePackages = array( 'all' => 'ALL' );
 foreach( $gBitSystem->mPackages as $pkgname=>$data ){
 	if( $data['active_switch'] ){

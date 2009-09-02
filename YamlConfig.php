@@ -21,6 +21,8 @@ class YamlConfig {
 	}
 
 	public static function processUploadFile( &$pParamHash ){ 
+		$pParamHash['config_log'] = array();
+
 		if( YamlConfig::verifyUpload( $pParamHash ) ){
 			foreach( $pParamHash['upload_process'] as $file ){
 				if( $hash = Horde_Yaml::loadFile( $file['tmp_name'] ) ){
@@ -51,11 +53,19 @@ class YamlConfig {
 						// store the configurations
 						YamlConfig::setThemesLayouts( $pParamHash ); 
 					}
+
+					// users_permissions settings
+					if( !empty( $hash['users_permissions'] ) ){
+						$pParamHash['config_data']['users_permissions'] = $hash['users_permissions'];
+
+						// store the configurations
+						YamlConfig::setUsersPermissions( $pParamHash ); 
+					}
 				}
 			}
 		}
 		else{
-			$pParamHash['config_log']['ERRORS'] .= "Upload verification failed. ".$pParamHash['errors']['files'];
+			$pParamHash['config_log']['ERRORS'] = "Upload verification failed. ".$pParamHash['errors']['files'];
 		}
 
 		return ( 
@@ -117,7 +127,7 @@ class YamlConfig {
 	}
 
 	// data from themes layouts
-	public static function getLayout( $pPackage ){
+	public static function getThemesLayout( $pPackage ){
 		global $gBitThemes;
 		$layouts = $gBitThemes->getAllLayouts();
 
@@ -139,6 +149,43 @@ class YamlConfig {
 			foreach( $area as $modules ){
 				foreach( $modules as $module ){
 					$data['themes_layouts'][$pkg][] = $module;;
+				}
+			}
+		}
+
+		$ret = Horde_Yaml::dump( $data );
+
+		return $ret;
+	}
+
+	// data from users
+	public static function getUsersPermissions( $pPackage ){
+		global $gBitSystem, $gBitUser;
+
+		// get a list of all groups and their users_permissions
+		$data = array( 'users_permissions'=>array() );
+
+		$listHash = array(
+			'only_root_groups' => TRUE,
+			'sort_mode' => !empty( $_REQUEST['sort_mode'] ) ? $_REQUEST['sort_mode'] : 'group_name_asc'
+		);
+
+		if( !empty( $pPackage ) && strtoupper( $pPackage ) != 'ALL' ){
+			$packages = array( $pPackage );
+		}else{
+			$packages = array_keys( $gBitSystem->mPackages );
+		}
+
+		$allPerms = $gBitUser->getGroupPermissions();
+		$allGroups = $gBitUser->getAllGroups( $listHash );
+
+		foreach( $allPerms as $perm=>$params ){
+			if( in_array( $params['package'], $packages ) ){ 
+				$data['users_permissions'][$perm] = array( 'description' => $params['perm_desc'], 'groups' => array() );
+				foreach( $allGroups as $group ){
+					if( in_array( $perm,  array_keys( $group['perms'] ) ) ){
+						$data['users_permissions'][$perm]['groups'][] = $group['group_id']; 
+					}
 				}
 			}
 		}
@@ -173,6 +220,32 @@ class YamlConfig {
 					$gBitThemes->storeModule( $module );
 					//storeModule modifies the module hash, so pick up the results from 'store' param
 					$pParamHash['config_log']['THEMES::storeModule'][$pkg][] = $module['store']; 
+				}
+			}
+		}
+	}
+
+	public static function setUsersPermissions( &$pParamHash ){
+		global $gBitUser;
+
+		$listHash = array(
+			'only_root_groups' => TRUE,
+			'sort_mode' => !empty( $_REQUEST['sort_mode'] ) ? $_REQUEST['sort_mode'] : 'group_name_asc'
+		);
+		$allGroups = $gBitUser->getAllGroups( $listHash );
+
+		if( !empty( $pParamHash['config_data'] ) && !empty( $pParamHash['config_data']['users_permissions'] ) ){
+			$hash = $pParamHash['config_data'];
+
+			foreach( $hash['users_permissions'] as $perm=>$data ){
+				foreach( array_keys( $allGroups ) as $groupId ) {
+					if( in_array( $groupId, $data['groups'] ) ){
+						$gBitUser->assignPermissionToGroup( $perm, $groupId );
+						$pParamHash['config_log']['USERS::setPermissions'][$perm]['assign_to_group'][] = $groupId;
+					} else {
+						$gBitUser->removePermissionFromGroup( $perm, $groupId );
+						$pParamHash['config_log']['USERS::setPermissions'][$perm]['remove_from_group'][] = $groupId;
+					}
 				}
 			}
 		}

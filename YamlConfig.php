@@ -1,10 +1,20 @@
 <?php 
-/*
-a simple class of static methods to return some basic configuration data or import it
+/**
+* $Header: /cvsroot/bitweaver/_bit_yamlconfig/YamlConfig.php,v 1.5 2009/09/16 20:52:28 wjames5 Exp $
+* $Id: YamlConfig.php,v 1.5 2009/09/16 20:52:28 wjames5 Exp $
+*/
 
-forward looking it would be preferable if packages exposed methods to get data and 
-this class could get those methods and call on them, rather than having to have sepecific functions 
-in here
+/*
+* a simple class of static methods to return some basic configuration data or import it
+*
+* forward looking it would be preferable if packages exposed methods to get data and 
+* this class could get those methods and call on them, rather than having to have sepecific functions 
+* in here
+
+* date created 2009/9/1
+* @author Will James <will@tekimaki.com>
+* @version $Revision: 1.5 $ $Date: 2009/09/16 20:52:28 $ $Author: wjames5 $
+* @class YamlConfig
 */
 
 class YamlConfig {
@@ -89,6 +99,9 @@ class YamlConfig {
 			count( $pParamHash['errors'] ) == 0 
 		);
 	}
+
+
+	/* Package Specific handlers - these could become service handlers eventually */
 
 	// data from kernel_config table by package
 	public static function getKernelConfig( $pPackage ){ 

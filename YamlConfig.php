@@ -1,7 +1,7 @@
 <?php 
 /**
-* $Header: /cvsroot/bitweaver/_bit_yamlconfig/YamlConfig.php,v 1.5 2009/09/16 20:52:28 wjames5 Exp $
-* $Id: YamlConfig.php,v 1.5 2009/09/16 20:52:28 wjames5 Exp $
+* $Header$
+* $Id$
 */
 
 /*
@@ -13,7 +13,7 @@
 
 * date created 2009/9/1
 * @author Will James <will@tekimaki.com>
-* @version $Revision: 1.5 $ $Date: 2009/09/16 20:52:28 $ $Author: wjames5 $
+* @version $Revision$
 * @class YamlConfig
 */
 
